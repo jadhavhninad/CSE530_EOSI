@@ -1,0 +1,4 @@
+Notes Assignment2-part1:
+
+1. ls -l /dev/<device> , we can see the major and the minor numbers
+
