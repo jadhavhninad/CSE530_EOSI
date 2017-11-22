@@ -1,0 +1,3 @@
+ninad@ninad-lpc:~/ASU_DATA/Courses/EOSI/New Gallileo config and all files/CSE438-530-Gen2_2017/Boot_image&SDK/kernel$ vim arch/x86/syscalls/syscall_32.tbl 
+ninad@ninad-lpc:~/ASU_DATA/Courses/EOSI/New Gallileo config and all files/CSE438-530-Gen2_2017/Boot_image&SDK/kernel$ vim ./include/linux/syscalls.h
+

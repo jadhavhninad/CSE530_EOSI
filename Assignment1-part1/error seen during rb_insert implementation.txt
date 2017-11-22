@@ -1,0 +1,63 @@
+static int rb_insert(struct rb_root *root, struct rb_object *structdata){
+
+        struct rb_node **new = &(root->rb_node), *parent=NULL;
+        struct rb_object *this;
+
+        while(*new){
+
+                this = container_of(*new, rb_object_t, my_node);
+                int cmpresult= structdata->key > this->key ? 1 : 0;
+                parent = *new;
+
+                if(cmpresult == 0)
+                        new =&((*new)->rb_left);
+                else
+                        new= &((*new)->rb_right);
+
+        }
+        rb_link_node(&structdata->my_node, parent, new);
+        rb_insert_color(&structdata->my_node,root);
+
+        printk("RB :Node inserted %d, parent is %d",structdata->key,this->key);
+
+        return 0;
+
+}
+ 
+
+The above works.
+
+After changing it to :
+static int rb_insert(struct rb_root *root, struct rb_object *structdata){
+
+        struct rb_node **new = &(root->rb_node);
+	struct rb_node  *parent=NULL;
+        struct rb_object *this;
+
+        while(*new){
+
+                this = container_of(*new, rb_object_t, my_node);
+                int cmpresult= structdata->key > this->key ? 1 : 0;
+                parent = *new;
+
+                if(cmpresult == 0)
+                        new =&((*new)->rb_left);
+                else
+                        new= &((*new)->rb_right);
+
+        }
+        
+	
+	//error seen here during the first node insertion.
+	rb_link_node(&structdata->my_node, parent, new);
+        rb_insert_color(&structdata->my_node,root);
+
+        printk("RB :Node inserted %d, parent is %d",structdata->key,this->key);
+
+        return 0;
+
+}
+ 
+
+ERROR:
+http://web.eece.maine.edu/~vweaver/projects/perf_events/fuzzer/3.14-rc5.rbtree_hrtimer.html

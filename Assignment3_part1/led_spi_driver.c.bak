@@ -1,0 +1,168 @@
+#include <linux/interrupt.h>
+#include <linux/module.h>
+#include <linux/spi/spi.h>
+#include <linux/kernel.h>
+#include <linux/fs.h>
+#include <linux/init.h>
+#include <linux/cdev.h>
+#include <linux/moduleparam.h>
+#include <asm/uaccess.h>
+#include <linux/types.h>
+#include <linux/slab.h>
+#include <linux/string.h>
+#include <linux/device.h>
+#include <linux/mutex.h>
+#include <linux/ioctl.h>
+
+
+#define IOCTL_SET_END _IOR('k',1, int)
+#define DEVICE_NAME "led_spi"
+#define DEVICE_CLASS "led_spi_class"
+
+static dev_t led_spi_device_number;
+static struct  device *led_spi_device;
+static struct cdev led_cdev;
+static struct class *led_spi_class;
+
+
+/*File operations go here*/
+
+
+static int led_spi_open(struct inode *i, struct file *f)
+{
+	printk(KERN_INFO "LED_SPI : Driver: open()\n");
+	return 0;
+}
+
+static int led_spi_release(struct inode *i, struct file *f)
+{
+	printk(KERN_INFO "LED_SPI : Driver: close()\n");
+	return 0;
+}
+
+static ssize_t led_spi_read(struct file *f, char __user *buf, size_t len, loff_t *off)
+{
+	printk(KERN_INFO "LED_SPI : Driver: read()\n");
+	return 0;
+}
+
+static ssize_t led_spi_write(struct file *f, const char __user *buf, size_t len, loff_t *off)
+{
+	printk(KERN_INFO "LED_SPI : Driver: write()\n");
+	return len;
+}
+
+static long led_spi_ioctl(struct file *file, unsigned int ioctl_num, unsigned long val){
+	printk(KERN_INFO "LED_SPI : Driver: ioctl()\n");
+	return 0;
+}
+
+static const struct file_operations led_spi_fops = {
+	.owner =	THIS_MODULE,
+	.write =	led_spi_write,
+	.read =		led_spi_read,
+	.unlocked_ioctl = led_spi_ioctl,
+	//.compat_ioctl = led_spi_compat_ioctl,
+	.open =		led_spi_open,
+	.release =	led_spi_release,
+	//.llseek =	no_llseek,
+};
+
+
+/*check this*/
+//----------------
+#ifdef CONFIG_OF
+static const struct of_device_id spidev_dt_ids[] = {
+		{ .compatible = "rohm,dh2228fv" },
+			{ .compatible = "lineartechnology,ltc2488" },
+				{},
+};
+MODULE_DEVICE_TABLE(of, spidev_dt_ids);
+#endif
+
+static int led_spi_probe(struct spi_device *spi){
+	return 0;
+}
+
+static int led_spi_remove(struct spi_device *spi){
+	return 0;
+}
+
+//---------------
+
+
+static struct spi_driver led_spi_driver = {
+	.driver = {
+		.name =		"led_spi",
+		.of_match_table = of_match_ptr(spidev_dt_ids),
+	},
+	
+	.probe = led_spi_probe,
+	.remove = led_spi_remove,
+};
+
+/*-------------------------------------------------------------------------*/
+
+static int __init led_spi_init(void)
+{
+	int status = 0;
+
+	//dynamically allocate the MAJOR number.
+	if(alloc_chardev_region(&led_spi_device_number, 0, 1, DEVICE_NAME) < 0)
+			return status;
+	
+
+	/* Request dynamic allocation of a device major number
+        if (alloc_chrdev_region(&rb_dev_number, 0, 1, DEVICE_NAME) < 0) {
+		printk(KERN_DEBUG "RB :Can't register device\n"); return -1;
+	}*/
+
+
+	//Create class. If class creation fails, unregister the led_spi char device.
+	led_spi_class = class_create(THIS_MODULE, DEVICE_CLASS);
+	if (IS_ERR(led_spi_class)) {
+		unregister_chrdev_region(led_spi_device_number, 1);
+		return PTR_ERR(led_spi_class);
+	}
+
+
+        /* Connect the file operations with the cdev */
+        cdev_init(&led_cdev, &led_spi_fops);
+        led_cdev.owner = THIS_MODULE;
+
+        /* Connect the major/minor number to the cdev */
+        status = cdev_add(&led_cdev, led_spi_device_number, 1);
+
+        if (status < 0) {
+                printk(KERN_INFO "LED_SPI : CDEV ADD FAILED\n");
+		class_destroy(led_spi_class);
+		unregister_chrdev_region(led_spi_device_number, 1);
+                return status;
+        }
+        
+       	led_spi_device = device_create(led_spi_class, NULL, MKDEV(MAJOR(led_spi_device_number), 0), NULL, DEVICE_NAME);    
+
+	
+	//Register the spi driver.If driver creation fails, destroy the class, device and the char_dev region
+	status = spi_register_driver(&led_spi_driver);
+	if (status < 0) {
+		device_destroy (led_spi_class, MKDEV(MAJOR(led_spi_device_number), 0));
+		class_destroy(led_spi_class);
+		unregister_chrdev_region(led_spi_device_number,1);
+	}
+	
+	return status;
+}
+module_init(led_spi_init);
+
+
+//Unregister the spi driver, destroy the spi class, unregister the char device
+static void __exit led_spi_exit(void)
+{
+	spi_unregister_driver(&led_spi_driver);
+	device_destroy (led_spi_class, MKDEV(MAJOR(led_spi_device_number), 0));
+	class_destroy(led_spi_class);
+	unregister_chrdev_region(led_spi_device_number,1);
+}
+module_exit(led_spi_exit);
+

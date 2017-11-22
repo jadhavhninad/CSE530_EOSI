@@ -1,0 +1,98 @@
+#include <stdio.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define ARRAY_SIZE(array) sizeof(array)/sizeof(array[0])
+
+
+int main() 
+{
+	int i,j,fd;
+	char wr_buf[]={0xff,0x00,0x1f,0x0f};
+	
+	/*	
+	int fdexport, fd24, fd44, fd72;
+	//GPIO EXPORT
+	fdexport = open("/sys/class/gpio/export", O_WRONLY);
+	if(fdexport < 0) {
+		printf("gpio export open failed \n");
+	}
+	
+	write(fdexport,"24",2);    // gpio30 is Level shifter GPIO for IO13 & one of the onboard LED 
+	//(GPIO30 = 1 means direction in for onboard LED && GPIO30 = 0 means direction out for onboard LED) 
+	write(fdexport,"44",2);    // gpio46 - MUX for IO13 & one of the onboard LED (we use it to select GPIO7 in MUX)
+	write(fdexport,"72",2);     // gpio7 - linux gpio pin which is connected with IO13 & one of the onboard LED
+	close(fdexport);
+
+	//direction selection
+	fd24 = open("/sys/class/gpio/gpio30/direction", O_WRONLY);
+	if(fd24 < 0) {
+		printf("gpio30 direction open failed \n");
+	}
+	
+	fd44 = open("/sys/class/gpio/gpio46/direction", O_WRONLY);
+	if(fd44 < 0) {
+		printf("gpio46 direction open failed \n");
+	}
+	
+	fd72 = open("/sys/class/gpio/gpio7/direction", O_WRONLY);
+	if(fd72 < 0) {
+		printf("gpio7 direction open failed \n");
+	}
+	
+	write(fd24,"out",3);       //setting direction to out
+	write(fd44,"out",3);
+	write(fd72,"out",3);
+	
+	fd24 = open("/sys/class/gpio/gpio30/value", O_WRONLY);
+	if(fd24 < 0) {
+		printf("gpio30 value open failed \n");
+	}
+	fd44 = open("/sys/class/gpio/gpio46/value", O_WRONLY);
+	if (fd44 < 0) {
+		printf("gpio46 value open failed \n");
+	}
+	fd72 = open("/sys/class/gpio/gpio7/value", O_WRONLY);
+	if (fd72 < 0) {
+		printf("gpio7 value open failed \n");
+	}
+
+	write(fd24,"0",1);  // selects direction
+	write(fd44,"1",1);  // selects GPIO 7
+	write(fd72,"0",1);   // initial value 0 of GPIO 7
+	*/
+
+	//char wr_buf[]={0xff};
+	//char rd_buf[10];
+
+	/*if (argc<2) {
+		printf("Usage:\n%s [device]\n", argv[0]);
+		exit(1);
+	}*/
+					   	
+	fd = open("/dev/spidev1.0", O_RDWR);
+	if (fd<=0) { 
+		printf("%s: Device %s not found\n");
+		exit(1);
+	}
+	
+	for(j=0; i<16; i++){
+		if (write(fd, wr_buf, ARRAY_SIZE(wr_buf)) != ARRAY_SIZE(wr_buf))
+			perror("Write Error");
+		printf("%d\n",i);
+		sleep(1);
+	}
+
+	 /* for(j=0; i<16; i++){
+	 	 write(fd, "1", 1);
+		 	perror("Write Error");
+		 printf("%d\n",i);
+		 sleep(1);
+	}*/
+
+
+	usleep(55);
+	close(fd);
+	return 0;
+}

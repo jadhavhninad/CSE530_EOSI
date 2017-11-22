@@ -1,0 +1,16 @@
+https://elixir.free-electrons.com/linux/latest/source/include/linux/spi/spi.h
+https://forum.rocketboards.org/t/implement-a-custom-spi-device-driver/576
+https://elixir.free-electrons.com/linux/v4.5/source/drivers/spi/spi-pxa2xx-pci.c
+https://elixir.free-electrons.com/linux/v4.5/source/drivers/spi/spidev.c
+
+https://github.com/torvalds/linux/blob/master/tools/spi/spidev_test.c
+
+
+
+files:
+/ASU_DATA/Courses/EOSI/New Gallileo config and all files/CSE438-530-Gen2_2017/Boot_image&SDK/kernel$ vim ./drivers/platform/x86/quark/intel_qrk_plat_galileo_gen2.c
+
+ninad@ninad-lpc:~/ASU_DATA/Courses/EOSI/New Gallileo config and all files/CSE438-530-Gen2_2017/Boot_image&SDK/kernel$ vim ./drivers/iio/adc/ad1x8s102.c
+
+/home/ninad/ASU_DATA/Courses/EOSI/Assignments/Assignment3_part1
+

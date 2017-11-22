@@ -1,0 +1,19 @@
+1. The error of passing my_rbtree of type struct rb_object_t to the insert function.
+-> the stucture was not declared before the function declaration at the very top. Hence the error as we were using the structure in the function declaration. Used forward declaration of the structure, which resolved the issue. Note : forward declaration, means declaring before defining.
+//These were missing before the int declaration.
+struct rb_object;
+struct rb_dev;
+
+static int rb_insert(struct rb_root *, struct rb_object * );
+
+
+
+2. chars are autoatically promoted to int.To get int value of char simply do
+
+char a ='9'
+int b = a
+
+we get int value in b.
+
+
+3. write seems to be working fine. Need to check the ioctl for read, which is giving error.
